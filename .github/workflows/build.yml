@@ -18,34 +18,43 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Android Project Structure
+    - name: Generate Project Files
       run: |
         mkdir -p app/src/main/java/com/nhxone/streamnaro
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
-        
-        # نقل الملفات للمجلدات الصحيحة إذا كانت في الجذر
-        [ -f MainActivity.java ] && mv MainActivity.java app/src/main/java/com/nhxone/streamnaro/ || true
-        [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/ || true
-        
-        # إنشاء strings.xml بدقة
+
+        cat << 'EOF' > app/src/main/java/com/nhxone/streamnaro/MainActivity.java
+        package com.nhxone.streamnaro;
+        import android.os.Bundle;
+        import android.webkit.WebView;
+        import android.webkit.WebViewClient;
+        import androidx.appcompat.app.AppCompatActivity;
+        public class MainActivity extends AppCompatActivity {
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                WebView webView = new WebView(this);
+                webView.getSettings().setJavaScriptEnabled(true);
+                webView.setWebViewClient(new WebViewClient());
+                webView.loadUrl("https://streamnaro.online/");
+                setContentView(webView);
+            }
+        }
+        EOF
+
         cat << 'EOF' > app/src/main/res/values/strings.xml
         <resources>
             <string name="app_name">Streamnaro</string>
         </resources>
         EOF
-        
-        # إنشاء AndroidManifest.xml
+
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET" />
             <application
-                android:allowBackup="true"
-                android:icon="@mipmap/ic_launcher"
                 android:label="Streamnaro"
-                android:roundIcon="@mipmap/ic_launcher_round"
-                android:supportsRtl="true"
                 android:theme="@style/Theme.AppCompat.Light.NoActionBar">
                 <activity
                     android:name=".MainActivity"
@@ -59,7 +68,6 @@ jobs:
         </manifest>
         EOF
 
-        # إنشاء build.gradle الخاص بالتطبيق
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -77,11 +85,9 @@ jobs:
         }
         dependencies {
             implementation 'androidx.appcompat:appcompat:1.6.1'
-            implementation 'com.google.android.material:material:1.9.0'
         }
         EOF
 
-        # إنشاء build.gradle الرئيسي
         cat << 'EOF' > build.gradle
         buildscript {
             repositories {
@@ -98,20 +104,9 @@ jobs:
                 mavenCentral()
             }
         }
-        task clean(type: Delete) {
-            delete rootProject.buildDir
-        }
         EOF
 
-        # إنشاء settings.gradle
         cat << 'EOF' > settings.gradle
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
         dependencyResolutionManagement {
             repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
             repositories {
@@ -123,9 +118,9 @@ jobs:
         include ':app'
         EOF
 
-        echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" > gradle.properties
+        echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
 
-    - name: Build APK with Gradle
+    - name: Build with Gradle
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK
