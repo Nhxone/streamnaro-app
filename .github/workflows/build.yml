@@ -18,15 +18,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Install Gradle
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gradle
-
-    - name: Generate Project Files
+    - name: Setup Android Project
       run: |
         mkdir -p app/src/main/java/com/nhxone/streamnaro
-        mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
         cat << 'EOF' > app/src/main/java/com/nhxone/streamnaro/MainActivity.java
@@ -123,10 +117,15 @@ jobs:
         include ':app'
         EOF
 
-        echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
+        cat << 'EOF' > gradle.properties
+        org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+        android.useAndroidX=true
+        EOF
 
-    - name: Build with Gradle
-      run: gradle assembleDebug --stacktrace
+        gradle wrapper --gradle-version 8.1.1
+
+    - name: Build with Gradle Wrapper
+      run: ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
