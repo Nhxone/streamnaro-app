@@ -18,24 +18,24 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Create Complete Android Project
+    - name: Setup Android Project Structure
       run: |
         mkdir -p app/src/main/java/com/nhxone/streamnaro
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
         
-        # Move source files
-        mv MainActivity.java app/src/main/java/com/nhxone/streamnaro/
-        mv activity_main.xml app/src/main/res/layout/
+        # نقل الملفات للمجلدات الصحيحة إذا كانت في الجذر
+        [ -f MainActivity.java ] && mv MainActivity.java app/src/main/java/com/nhxone/streamnaro/ || true
+        [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/ || true
         
-        # Create strings.xml properly
+        # إنشاء strings.xml بدقة
         cat << 'EOF' > app/src/main/res/values/strings.xml
         <resources>
             <string name="app_name">Streamnaro</string>
         </resources>
         EOF
         
-        # Create AndroidManifest.xml
+        # إنشاء AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -59,7 +59,7 @@ jobs:
         </manifest>
         EOF
 
-        # Create app/build.gradle
+        # إنشاء build.gradle الخاص بالتطبيق
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -81,7 +81,7 @@ jobs:
         }
         EOF
 
-        # Create root build.gradle
+        # إنشاء build.gradle الرئيسي
         cat << 'EOF' > build.gradle
         buildscript {
             repositories {
@@ -103,7 +103,7 @@ jobs:
         }
         EOF
 
-        # Create settings.gradle
+        # إنشاء settings.gradle
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
