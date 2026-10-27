@@ -18,6 +18,11 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
+    - name: Install Gradle
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gradle
+
     - name: Generate Project Files
       run: |
         mkdir -p app/src/main/java/com/nhxone/streamnaro
@@ -121,7 +126,7 @@ jobs:
         echo "org.gradle.jvmargs=-Xmx2048m" > gradle.properties
 
     - name: Build with Gradle
-      run: ./gradlew assembleDebug --stacktrace
+      run: gradle assembleDebug --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
