@@ -22,7 +22,6 @@ jobs:
       run: |
         mkdir -p app/src/main/java/com/nhxone/streamnaro
         mkdir -p app/src/main/res/layout
-        mkdir -p app/src/main/res/values
         
         # Move files to correct Android directories
         mv MainActivity.java app/src/main/java/com/nhxone/streamnaro/
@@ -79,10 +78,25 @@ jobs:
         }
         EOF
 
-        # Create root build.gradle
+        # Create root build.gradle with correct DSL
         cat << 'EOF' > build.gradle
-        plugins {
-            id 'com.android.application' version '8.1.1' apply false
+        buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath 'com.android.tools.build:gradle:8.1.1'
+            }
+        }
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        task clean(type: Delete) {
+            delete rootProject.buildDir
         }
         EOF
 
@@ -96,7 +110,7 @@ jobs:
             }
         }
         dependencyResolutionManagement {
-            repositoriesMode.set(repositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
             repositories {
                 google()
                 mavenCentral()
@@ -106,13 +120,10 @@ jobs:
         include ':app'
         EOF
 
-        echo "gradle.version=8.0" > gradle.properties
-
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
+        echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" > gradle.properties
 
     - name: Build APK with Gradle
-      run: ./gradlew assembleDebug
+      run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
